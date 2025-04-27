@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Chord Grid</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: #fff;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      background: #fff;
+    }
+    .chord-grid-container {
+      width: 100vw;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      margin-top: 2rem;
+      background: #fff;
+    }
+    .chord-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(80px, 12vw));
+      grid-template-rows: minmax(80px, 12vw) minmax(80px, 12vw);
+      gap: 4px;
+      justify-items: center;
+      align-items: start;
+      background: #fff;
+    }
+    .chord-box {
+      aspect-ratio: 1 / 1;
+      width: 100%;
+      height: auto;
+      background: #fff;
+      border: none;
+      border-radius: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      overflow: hidden;
+      transition: 
+        box-shadow 0.1s,
+        transform 0.1s cubic-bezier(.4,2,.6,1),
+        z-index 0.1s;
+      padding: 0;
+      box-sizing: border-box;
+      outline: none !important;
+      position: relative;
+      touch-action: manipulation;
+      user-select: none;
+      z-index: 1;
+    }
+    .chord-box:active,
+    .chord-box.active,
+    .chord-box.kb-active {
+      transform: scale(1.15);
+      z-index: 2;
+      box-shadow: none !important;
+      outline: none !important;
+    }
+    .chord-img {
+      max-width: 90%;
+      max-height: 90%;
+      object-fit: contain;
+      pointer-events: none;
+      user-select: none;
+      display: block;
+    }
+    .chord-box:focus,
+    .chord-box:focus-visible,
+    .chord-box:target {
+      outline: none !important;
+      box-shadow: none !important;
+    }
+    .chord-box::-moz-focus-inner {
+      border: 0 !important;
+    }
+    .chord-box::-webkit-focus-inner {
+      border: 0 !important;
+    }
+    /* Volume control styles */
+    .volume-container {
+      width: 100vw;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 2.5rem 0 1.2rem 0;
+      background: #fff;
+    }
+    .volume-label {
+      font-family: system-ui, sans-serif;
+      font-size: 1.1em;
+      color: #222;
+      margin-right: 0.6em;
+      letter-spacing: 0.04em;
+      user-select: none;
+    }
+    .volume-slider {
+      width: 180px;
+      accent-color: #5694e3;
+      height: 2.5em;
+    }
+    .volume-value {
+      margin-left: 0.7em;
+      min-width: 2.5em;
+      text-align: right;
+      font-family: monospace;
+      color: #222;
+      font-size: 1.07em;
+      user-select: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="chord-grid-container">
+    <div class="chord-grid">
+      <!-- Top row: D, G, C -->
+      <button class="chord-box" id="d-box" data-pos="1A" data-key="f" aria-label="D box" tabindex="0">
+        <img class="chord-img" src="https://raw.githubusercontent.com/VisualMusicalMinds/Musical-Images/refs/heads/main/ChordBox%20D.png" alt="D Chord">
+      </button>
+      <button class="chord-box" id="g-box" data-pos="1B" data-key="g" aria-label="G box" tabindex="0">
+        <img class="chord-img" src="https://raw.githubusercontent.com/VisualMusicalMinds/Musical-Images/refs/heads/main/ChordBox%20G.png" alt="G Chord">
+      </button>
+      <button class="chord-box" id="c-box" data-pos="1C" data-key="h" aria-label="C box" tabindex="0">
+        <img class="chord-img" src="https://raw.githubusercontent.com/VisualMusicalMinds/Musical-Images/refs/heads/main/ChordBox%20C.png" alt="C Chord">
+      </button>
+      <!-- Bottom row: Em centered -->
+      <div></div>
+      <button class="chord-box" id="em-box" data-pos="2B" data-key="t" aria-label="Em box" tabindex="0">
+        <img class="chord-img" src="https://raw.githubusercontent.com/VisualMusicalMinds/Musical-Images/refs/heads/main/ChordBox%20Em.png" alt="Em Chord">
+      </button>
+      <div></div>
+    </div>
+  </div>
+  <div class="volume-container">
+    <span class="volume-label">Volume</span>
+    <input type="range" min="0" max="100" step="1" value="66" class="volume-slider" id="volume-slider" aria-label="Volume">
+    <span class="volume-value" id="volume-value">66%</span>
+  </div>
+  <script>
+    // ----- CLEAR MARIMBA-LIKE SYNTH -----
+    const noteFreqs = {
+      "C3": 130.81, "C#3": 138.59, "Db3": 138.59, "D3": 146.83, "D#3": 155.56, "Eb3": 155.56, "E3": 164.81, "F3": 174.61, "F#3": 185.00, "Gb3": 185.00, "G3": 196.00, "G#3": 207.65, "Ab3": 207.65, "A3": 220.00, "A#3": 233.08, "Bb3": 233.08, "B3": 246.94,
+      "C4": 261.63, "C#4": 277.18, "Db4": 277.18, "D4": 293.66, "D#4": 311.13, "Eb4": 311.13, "E4": 329.63, "F4": 349.23, "F#4": 369.99, "Gb4": 369.99, "G4": 392.00, "G#4": 415.30, "Ab4": 415.30, "A4": 440.00, "A#4": 466.16, "Bb4": 466.16, "B4": 493.88,
+      "C5": 523.25, "C#5": 554.37, "Db5": 554.37, "D5": 587.33, "D#5": 622.25, "Eb5": 622.25, "E5": 659.25, "F5": 698.46, "F#5": 739.99, "Gb5": 739.99, "G5": 783.99, "A5": 880.00, "B5": 987.77
+    };
+    function getFreq(note) {
+      return noteFreqs[note] || 440;
+    }
+
+    // -- VOLUME CONTROL --
+    let userVolume = 0.66; // Default: 66%
+    const globalGain = (() => {
+      const ctx = getAudioCtx();
+      const gain = ctx.createGain();
+      gain.gain.value = userVolume;
+      gain.connect(ctx.destination);
+      return gain;
+    })();
+
+    function getAudioCtx() {
+      if (!window._audioCtx) {
+        window._audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      return window._audioCtx;
+    }
+
+    // Marimba-like, but clear and percussive, less oscillation, short, with a "bounce"
+    function playClearMarimbaChord(notes, options = {}) {
+      const ctx = getAudioCtx();
+      const now = ctx.currentTime;
+      const duration = options.duration || 0.34;
+      const stagger = options.stagger || 0.028;
+      const gain = options.gain || 0.17;
+
+      notes.forEach((note, i) => {
+        const osc = ctx.createOscillator();
+        osc.type = "triangle";
+        let gainNode = ctx.createGain();
+        gainNode.gain.value = 1;
+
+        // Envelope: very fast attack, quick decay, sharp cutoff
+        const env = ctx.createGain();
+        env.gain.setValueAtTime(0.001, now + i * stagger);
+        env.gain.linearRampToValueAtTime(gain, now + i * stagger + 0.005);
+        env.gain.linearRampToValueAtTime(gain * 0.32, now + i * stagger + duration * 0.25);
+        env.gain.linearRampToValueAtTime(0.001, now + i * stagger + duration);
+
+        // Add a gentle highpass for a woody feel
+        const filter = ctx.createBiquadFilter();
+        filter.type = "highpass";
+        filter.frequency.value = 240;
+        filter.Q.value = 1.5;
+
+        osc.frequency.value = getFreq(note);
+
+        // "Bounce" effect: quick, gentle pitch drop at the start
+        osc.frequency.setValueAtTime(getFreq(note) * 1.04, now + i * stagger);
+        osc.frequency.linearRampToValueAtTime(getFreq(note), now + i * stagger + 0.045);
+
+        osc.connect(gainNode).connect(filter).connect(env).connect(globalGain);
+
+        osc.start(now + i * stagger);
+        osc.stop(now + i * stagger + duration);
+      });
+    }
+
+    // --- Chord definitions ---
+    // D box = 1A, G box = 1B, C box = 1C, Em box = 2B
+    const chordData = {
+      "g-box": ["G3", "D4", "G4", "B4"],           // G box: G3 D4 G4 B4
+      "d-box": ["D4", "F#4", "A4", "D4"],          // D box: D4 F#4 A4 D4
+      "c-box": ["E4", "G4", "C5", "E5"],           // C box: E4 G4 C5 E5
+      "em-box": ["E4", "G4", "B4"],                // Em box: E4 G4 B4
+    };
+
+    // --- Hold logic for quarter note pulse at 137 BPM ---
+    // 137 BPM: quarter = 60000 / 137 ≈ 437.96 ms
+    const bpm = 137;
+    const quarter = 60000 / bpm; // ms
+
+    // To track which boxes are held/tapped, for mouse/touch/keyboard
+    const holdTimers = {};
+    const repeatPulse = (boxId) => {
+      playClearMarimbaChord(chordData[boxId]);
+      holdTimers[boxId] = setTimeout(() => {
+        if (!holdTimers[boxId]) return;
+        repeatPulse(boxId);
+      }, quarter);
+    };
+
+    function startPulse(box) {
+      stopPulse(box.id); // Prevent overlap
+      repeatPulse(box.id);
+    }
+    function stopPulse(boxId) {
+      if (holdTimers[boxId]) {
+        clearTimeout(holdTimers[boxId]);
+        holdTimers[boxId] = null;
+      }
+    }
+
+    // ---- UI logic ----
+    function setActive(box, on) {
+      if (on) {
+        box.classList.add('active');
+      } else {
+        box.classList.remove('active');
+      }
+    }
+
+    document.querySelectorAll('.chord-box').forEach(box => {
+      box.addEventListener('pointerdown', e => {
+        setActive(box, true);
+        startPulse(box);
+      });
+      box.addEventListener('pointerup', e => {
+        setActive(box, false);
+        stopPulse(box.id);
+      });
+      box.addEventListener('pointerleave', e => {
+        setActive(box, false);
+        stopPulse(box.id);
+      });
+      box.addEventListener('touchend', e => {
+        setActive(box, false);
+        stopPulse(box.id);
+      });
+      box.addEventListener('touchcancel', e => {
+        setActive(box, false);
+        stopPulse(box.id);
+      });
+    });
+
+    // Keyboard logic
+    const keyToBoxId = {
+      "f": "d-box",
+      "g": "g-box",
+      "h": "c-box",
+      "b": "em-box"
+    };
+    const downKeys = {};
+
+    document.addEventListener('keydown', e => {
+      const key = e.key.toLowerCase();
+      if (keyToBoxId[key] && !downKeys[key]) {
+        downKeys[key] = true;
+        const box = document.getElementById(keyToBoxId[key]);
+        if (box) {
+          box.classList.add('kb-active');
+          startPulse(box);
+          box.blur();
+        }
+      }
+    });
+
+    document.addEventListener('keyup', e => {
+      const key = e.key.toLowerCase();
+      if (keyToBoxId[key]) {
+        downKeys[key] = false;
+        const box = document.getElementById(keyToBoxId[key]);
+        if (box) {
+          box.classList.remove('kb-active');
+          stopPulse(box.id);
+        }
+      }
+    });
+
+    window.addEventListener('blur', () => {
+      Object.keys(keyToBoxId).forEach(key => {
+        const box = document.getElementById(keyToBoxId[key]);
+        if (box) {
+          box.classList.remove('kb-active');
+          stopPulse(box.id);
+        }
+        downKeys[key] = false;
+      });
+    });
+
+    document.querySelectorAll('.chord-box').forEach(box => {
+      box.addEventListener('focus', e => {
+        box.blur();
+      });
+    });
+
+    // ---- Volume Control Logic ----
+    const volumeSlider = document.getElementById('volume-slider');
+    const volumeValue = document.getElementById('volume-value');
+    volumeSlider.addEventListener('input', function () {
+      userVolume = volumeSlider.value / 100;
+      globalGain.gain.setValueAtTime(userVolume, getAudioCtx().currentTime);
+      volumeValue.textContent = Math.round(userVolume * 100) + "%";
+    });
+    // On load, set default value
+    window.addEventListener('DOMContentLoaded', () => {
+      globalGain.gain.setValueAtTime(userVolume, getAudioCtx().currentTime);
+      volumeValue.textContent = Math.round(userVolume * 100) + "%";
+    });
+  </script>
+</body>
+</html>
