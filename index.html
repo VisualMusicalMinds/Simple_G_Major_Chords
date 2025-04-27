@@ -38,9 +38,8 @@
       aspect-ratio: 1 / 1;
       width: 100%;
       height: auto;
-      background: #fff;
-      border: none;
-      border-radius: 0;
+      background: transparent !important;
+      border: none !important;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -50,7 +49,8 @@
         box-shadow 0.1s,
         transform 0.1s cubic-bezier(.4,2,.6,1),
         z-index 0.1s;
-      padding: 0;
+      padding: 0 !important;
+      margin: 0 !important;
       box-sizing: border-box;
       outline: none !important;
       position: relative;
@@ -61,18 +61,25 @@
     .chord-box:active,
     .chord-box.active,
     .chord-box.kb-active {
-      transform: scale(1.15);
+      transform: scale(1.3);
       z-index: 2;
       box-shadow: none !important;
       outline: none !important;
+      background: transparent !important;
     }
     .chord-img {
-      max-width: 90%;
-      max-height: 90%;
+      max-width: 100%;
+      max-height: 100%;
       object-fit: contain;
       pointer-events: none;
       user-select: none;
       display: block;
+      background: transparent !important;
+      border: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      width: 100%;
+      height: 100%;
     }
     .chord-box:focus,
     .chord-box:focus-visible,
@@ -134,7 +141,7 @@
       </button>
       <!-- Bottom row: Em centered -->
       <div></div>
-      <button class="chord-box" id="em-box" data-pos="2B" data-key="t" aria-label="Em box" tabindex="0">
+      <button class="chord-box" id="em-box" data-pos="2B" data-key="b" aria-label="Em box" tabindex="0">
         <img class="chord-img" src="https://raw.githubusercontent.com/VisualMusicalMinds/Musical-Images/refs/heads/main/ChordBox%20Em.png" alt="Em Chord">
       </button>
       <div></div>
@@ -223,7 +230,6 @@
     };
 
     // --- Hold logic for quarter note pulse at 137 BPM ---
-    // 137 BPM: quarter = 60000 / 137 ≈ 437.96 ms
     const bpm = 137;
     const quarter = 60000 / bpm; // ms
 
@@ -285,7 +291,7 @@
       "f": "d-box",
       "g": "g-box",
       "h": "c-box",
-      "b": "em-box"
+      "b": "em-box" // Em box now uses 'b'
     };
     const downKeys = {};
 
