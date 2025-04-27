@@ -24,6 +24,8 @@
       align-items: flex-start;
       margin-top: 2rem;
       background: #fff;
+      padding: 2em; /* Ensures scaling isn't clipped in iframes */
+      box-sizing: content-box;
     }
     .chord-grid {
       display: grid;
@@ -44,7 +46,7 @@
       justify-content: center;
       align-items: center;
       cursor: pointer;
-      overflow: hidden;
+      overflow: visible;
       transition: 
         box-shadow 0.1s,
         transform 0.1s cubic-bezier(.4,2,.6,1),
